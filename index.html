@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Video Parser</title>
+	<style>
+		body{
+			background-color: #555;
+			color: #ccc;
+			font-family: sans-serif;
+		}
+
+		input,button{
+			background-color: #444;
+			color: #ccc;
+			font-family: sans-serif;
+		}
+		button{
+			border: 1px solid #666;
+			border-radius: 1/4em;
+
+		}
+		#download{
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<input type="file" id="input">
+	<br>
+	<input id="r" type="number" value="1" min="0" max="1" step=".01"> 
+	<input id="g" type="number" value="1" min="0" max="1" step=".01"> 
+	<input id="b" type="number" value="1" min="0" max="1" step=".01"> 
+	<button id="parse">Parse</button>
+	<br>
+	<pre id="result"></pre>
+	<a id="download" download="parsed.webm">Download</a>
+	<video id="source"></video>
+	<canvas id="render"></canvas>
+	<script src="parser.js"></script>
+	<script>
+		let fInput = document.querySelector('#input'), output = document.querySelector('#result'), download = document.querySelector('#download');
+
+		document.querySelector('#parse').onclick = async () => {
+			download.style.display = 'none';
+			if(fInput.files[0] instanceof File){
+				try{
+					let parser = new VideoParser(fInput.files[0], document.querySelector('#source'), document.querySelector('#render'));
+
+					let [originalFrames, parsedFrames, videoBlob] = await parser.frameData(data => {
+						output.textContent = `Parsing ${(parser.videoCompletion * 100).toFixed()}%`;
+						for(let i = 0; i < data.length; i += 4){
+							data[i] *= +(document.querySelector('#r').value || 1); 
+							data[i + 1] *= +(document.querySelector('#g').value || 1); 
+							data[i + 2] *= +(document.querySelector('#b').value || 1); 
+						}
+						return data;
+					});
+					let href = URL.createObjectURL(videoBlob);
+					download.setAttribute('href', href);
+					download.download = 'parsed.webm';
+					download.style.display = 'block';
+				}catch(err){
+					output.textContent = `Failed to parse: ${err}`;
+					console.error(err.stack);
+				}
+			}else{
+				output.textContent = 'No file selected';
+			}
+		};
+	</script>
+</body>
+</html>
