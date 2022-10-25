@@ -36,8 +36,8 @@
 	<button id="parse">Parse</button>
 	<br>
 	<pre id="result"></pre>
-	<a id="download" download="parsed.webm">Download</a>
 	<video id="source"></video>
+	<a id="download" download="parsed.webm">Download</a>
 	<canvas id="render"></canvas>
 	<script src="parser.js"></script>
 	<script>
@@ -59,6 +59,7 @@
 						return data;
 					});
 					let href = URL.createObjectURL(videoBlob);
+					console.log(videoBlob, href)
 					download.setAttribute('href', href);
 					download.download = 'parsed.webm';
 					download.style.display = 'block';
