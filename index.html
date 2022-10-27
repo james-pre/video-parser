@@ -35,19 +35,15 @@
 		<pre id="result"></pre>
 		<a id="download" download="output.webm">Download</a>
 		<video id="source"></video>
-		<video id="output"></video>
-		
-		<canvas id="render"></canvas>
 		<script src="parser.js"></script>
 		<script>
 			let fInput = document.querySelector('#input'),
-				result = document.querySelector('#result'),
-				download = document.querySelector('#download');
+				result = document.querySelector('#result');
 
 			document.querySelector('#parse').onclick = async () => {
 				if (fInput.files[0] instanceof File) {
 					try {
-						let parser = new VideoParser(fInput.files[0], document.querySelector('#source'), document.querySelector('#render'));
+						let parser = new VideoParser(fInput.files[0], document.querySelector('#source'));
 
 						let videoBlob = await parser.frameData((data) => {
 							result.textContent = `Parsing ${(parser.videoCompletion * 100).toFixed()}%`;
@@ -59,9 +55,7 @@
 							return data;
 						});
 						let href = URL.createObjectURL(videoBlob);
-
-						console.log(videoBlob, href);
-						download.setAttribute('href', href);
+						document.querySelector('#download').setAttribute('href', href);
 					} catch (err) {
 						result.textContent = `Failed to parse: ${err}`;
 						console.error(err.stack);
