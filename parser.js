@@ -35,11 +35,11 @@ class VideoParser {
 				parsedFrames = [],
 				recordedChunks = [];
 
-			let stream = this._render.captureStream(0);
-			let recorder = new MediaRecorder(stream);
+			let stream = this._render.captureStream(16);
+			let recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
 
 			this._video.ontimeupdate = async () => {
-				await new Promise(res => setTimeout(res, 8));
+				await new Promise((res) => setTimeout(res, 8));
 
 				this._video.pause();
 
@@ -66,24 +66,21 @@ class VideoParser {
 			};
 
 			recorder.ondataavailable = (e) => {
-				console.log(e);
-				if(e.data.size > 0){
+				if (e.data.size > 0) {
 					recordedChunks.push(e.data);
 				}
-				
 			};
 
 			this._video.onended = async () => {
 				recorder.stop();
-				await new Promise(res => setTimeout(res, 25));
-				let blob = new Blob(recordedChunks, {type: 'video/webm;codecs=vp8'});
-				console.log(blob);
-				resolve(originalFrames, parsedFrames, blob);
+				await new Promise((res) => setTimeout(res, 25));
+				let blob = new Blob(recordedChunks, { type: 'video/webm' });
+				resolve(blob);
 			};
 
 			this._video.playbackRate = 2;
-			recorder.start();
 			this._video.play();
+			recorder.start();
 		});
 	}
 
