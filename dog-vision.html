@@ -27,10 +27,7 @@
 	<body>
 		<input type="file" id="input" />
 		<br />
-		<input id="r" type="number" value="1" min="0" max="1" step=".01" />
-		<input id="g" type="number" value="1" min="0" max="1" step=".01" />
-		<input id="b" type="number" value="1" min="0" max="1" step=".01" />
-		<button id="parse">Parse</button>
+		<button id="parse">Filter</button>
 		<br />
 		<pre id="result"></pre>
 		<a id="download" download="output.webm">Download</a>
@@ -44,22 +41,25 @@
 				if (fInput.files[0] instanceof File) {
 					try {
 						let parser = new VideoParser(fInput.files[0], document.querySelector('#source'));
-						let r = +(document.querySelector('#r').value || 1),
-							g = +(document.querySelector('#g').value || 1),
-							b = +(document.querySelector('#b').value || 1);
+
 						let videoBlob = await parser.frameData((data) => {
-							result.textContent = `Parsing ${(parser.videoCompletion * 100).toFixed()}%`;
+							result.textContent = `Filtering ${(parser.videoCompletion * 100).toFixed()}%`;
 							for (let i = 0; i < data.length; i += 4) {
-								data[i] *= r;
-								data[i + 1] *= g;
-								data[i + 2] *= b;
+								
+								let yellow = (data[i] + data[i + 1]) * 0.325;
+								//if(i % 1000000 == 0) console.log(data[i], data[i+1], data[i+2], yellow);
+								data[i] = yellow;
+								data[i + 1] = yellow;
+								data[i + 2] *= 1;
+								data[i + 3] *= 0.5;
+								
 							}
 							return data;
 						});
 						let href = URL.createObjectURL(videoBlob);
 						document.querySelector('#download').setAttribute('href', href);
 					} catch (err) {
-						result.textContent = `Failed to parse: ${err}`;
+						result.textContent = `Failed to filter: ${err}`;
 						console.error(err.stack);
 					}
 				} else {
