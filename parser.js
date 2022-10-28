@@ -30,18 +30,20 @@ class VideoParser {
 	}
 
 	frameData(parser) {
-		return new Promise((resolve) => {
+		return new Promise(async (resolve) => {
 			const originalFrames = [],
 				parsedFrames = [],
 				recordedChunks = [];
 
-			let stream = this._render.captureStream(16);
+			let stream = this._render.captureStream(60);
 			let recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
 
 			this._video.ontimeupdate = async () => {
-				await new Promise((res) => setTimeout(res, 8));
-
+				recorder.pause();
+				await new Promise(res => setTimeout(res, 8));
+				if(recorder.state != 'inactive') recorder.resume();
 				this._video.pause();
+				
 
 				let frame = originalFrames.length;
 
@@ -61,7 +63,7 @@ class VideoParser {
 				}
 
 				if (this._video.currentTime < this._video.duration) {
-					this._video.play();
+					await this._video.play();
 				}
 			};
 
@@ -79,8 +81,10 @@ class VideoParser {
 			};
 
 			this._video.playbackRate = 2;
-			this._video.play();
 			recorder.start();
+			recorder.pause();
+			this._video.play();
+			
 		});
 	}
 
